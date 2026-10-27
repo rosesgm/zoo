@@ -1,0 +1,17 @@
+name: Pruebas del zoologico
+on:
+  push:
+
+jobs:
+  tests:
+    runs-on: self-hosted
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v7
+
+      - name: Levantar la app con mi base de datos
+        run: docker compose up -d --build
+
+      - name: Ejecutar pruebas
+        run: docker compose exec -T app python -m pytest
