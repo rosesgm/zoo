@@ -11,6 +11,27 @@ services:
       - "9999:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    image: zoo
+    container_name: zoo_app
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: usuario
+      DB_PASSWORD: 1234
+      DB_NAME: animales
+    ports:
+      - "5001:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
 
 volumes:
   mysql_data:

@@ -1,16 +1,29 @@
+import os
+import time
+
 import mysql.connector
 
-def conectar():
-    return mysql.connector.connect(
-        host="host.docker.internal",
-        port=9999,
-        user="usuario",
-        password="1234",
-        database="animales"
-    )
+DB_CONFIG = {
+    "host": os.getenv("DB_HOST", "host.docker.internal"),
+    "port": int(os.getenv("DB_PORT", "9999")),
+    "user": os.getenv("DB_USER", "usuario"),
+    "password": os.getenv("DB_PASSWORD", "1234"),
+    "database": os.getenv("DB_NAME", "animales"),
+}
 
-def crear_tabla():
-    conexion = conectar()
+def conectar():
+    return mysql.connector.connect(**DB_CONFIG)
+
+def crear_tabla(reintentos=30, espera=2):
+    for intento in range(1, reintentos + 1):
+        try:
+            conexion = conectar()
+            break
+        except mysql.connector.Error as e:
+            if intento == reintentos:
+                raise
+            print(f"Esperando a MySQL ({intento}/{reintentos}): {e}")
+            time.sleep(espera)
     cursor = conexion.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS animales (
